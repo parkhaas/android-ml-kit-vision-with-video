@@ -1,5 +1,6 @@
 package com.google.mlkit.vision.demo.video;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ import java.util.List;
 public abstract class VideoBaseActivity extends AppCompatActivity {
 	private static final String TAG = VideoBaseActivity.class.getSimpleName();
 
-//	private static final int REQUEST_CHOOSE_VIDEO = 1001;
+	private static final int REQUEST_CHOOSE_VIDEO = 1001;
 
 	private static final String FACE_DETECTION = "Face Detection";
 	private static final String TEXT_RECOGNITION = "Text Recognition";
@@ -147,22 +148,22 @@ public abstract class VideoBaseActivity extends AppCompatActivity {
 	}
 
 	private void startChooseVideoIntentForResult() {
-//		Intent intent = new Intent();
-//		intent.setType("video/*");
-//		intent.setAction(Intent.ACTION_GET_CONTENT);
-//		startActivityForResult(Intent.createChooser(intent, "Select Video"), REQUEST_CHOOSE_VIDEO);
+		Intent intent = new Intent();
+		intent.setType("video/*");
+		intent.setAction(Intent.ACTION_GET_CONTENT);
+		startActivityForResult(Intent.createChooser(intent, "Select Video"), REQUEST_CHOOSE_VIDEO);
 
-		setupPlayer(Uri.parse("http://10.110.166.45:8080/hls/video12/index.m3u8"));
+//		setupPlayer(Uri.parse("http://10.110.166.45:8080/hls/video12/index.m3u8"));
 	}
-//
-//	@Override
-//	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//		super.onActivityResult(requestCode, resultCode, data);
-//		if (requestCode == REQUEST_CHOOSE_VIDEO && resultCode == RESULT_OK) {
-//			// In this case, imageUri is returned by the chooser, save it.
-//			setupPlayer(data.getData());
-//		}
-//	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_CHOOSE_VIDEO && resultCode == RESULT_OK) {
+			// In this case, imageUri is returned by the chooser, save it.
+			setupPlayer(data.getData());
+		}
+	}
 
 	private void populateProcessorSelector() {
 		Spinner featureSpinner = findViewById(R.id.processor_selector);
