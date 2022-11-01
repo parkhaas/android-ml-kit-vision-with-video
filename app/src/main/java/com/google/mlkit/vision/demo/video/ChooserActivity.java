@@ -20,8 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -40,10 +38,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.mlkit.vision.demo.BuildConfig;
 import com.google.mlkit.vision.demo.R;
-import com.google.mlkit.vision.demo.java.CameraXLivePreviewActivity;
-import com.google.mlkit.vision.demo.java.CameraXSourceDemoActivity;
-import com.google.mlkit.vision.demo.java.LivePreviewActivity;
-import com.google.mlkit.vision.demo.java.StillImageActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,33 +47,43 @@ import java.util.List;
  * available testing Activities.
  */
 public final class ChooserActivity extends AppCompatActivity
-    implements OnRequestPermissionsResultCallback, AdapterView.OnItemClickListener {
+        implements OnRequestPermissionsResultCallback, AdapterView.OnItemClickListener {
   private static final String TAG = "ChooserActivity";
   private static final int PERMISSION_REQUESTS = 1;
 
-  private static final Class<?>[] CLASSES =new Class<?>[] {
+  private static final Class<?>[] CLASSES = new Class<?>[]{
           VideoGLESActivity.class,
           VideoTextureViewActivity.class,
           VideoRawDecoderDataActivity.class
   };
 
-  private static final int[] DESCRIPTION_IDS =new int[] {
+  private static final int[] DESCRIPTION_IDS = new int[]{
           R.string.desc_video_opengles_activity,
           R.string.desc_video_textureview_activity,
           R.string.desc_video_rawdecoderdata_activity
   };
 
+  private static boolean isPermissionGranted(Context context, String permission) {
+    if (ContextCompat.checkSelfPermission(context, permission)
+            == PackageManager.PERMISSION_GRANTED) {
+      Log.i(TAG, "Permission granted: " + permission);
+      return true;
+    }
+    Log.i(TAG, "Permission NOT granted: " + permission);
+    return false;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     if (BuildConfig.DEBUG) {
       StrictMode.setThreadPolicy(
-          new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+              new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
       StrictMode.setVmPolicy(
-          new StrictMode.VmPolicy.Builder()
-              .detectLeakedSqlLiteObjects()
-              .detectLeakedClosableObjects()
-              .penaltyLog()
-              .build());
+              new StrictMode.VmPolicy.Builder()
+                      .detectLeakedSqlLiteObjects()
+                      .detectLeakedClosableObjects()
+                      .penaltyLog()
+                      .build());
     }
     super.onCreate(savedInstanceState);
     Log.d(TAG, "onCreate");
@@ -109,8 +113,8 @@ public final class ChooserActivity extends AppCompatActivity
   private String[] getRequiredPermissions() {
     try {
       PackageInfo info =
-          this.getPackageManager()
-              .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
+              this.getPackageManager()
+                      .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
       String[] ps = info.requestedPermissions;
       if (ps != null && ps.length > 0) {
         return ps;
@@ -141,18 +145,8 @@ public final class ChooserActivity extends AppCompatActivity
 
     if (!allNeededPermissions.isEmpty()) {
       ActivityCompat.requestPermissions(
-          this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
+              this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
     }
-  }
-
-  private static boolean isPermissionGranted(Context context, String permission) {
-    if (ContextCompat.checkSelfPermission(context, permission)
-        == PackageManager.PERMISSION_GRANTED) {
-      Log.i(TAG, "Permission granted: " + permission);
-      return true;
-    }
-    Log.i(TAG, "Permission NOT granted: " + permission);
-    return false;
   }
 
   private static class MyArrayAdapter extends ArrayAdapter<Class<?>> {
@@ -174,7 +168,7 @@ public final class ChooserActivity extends AppCompatActivity
 
       if (convertView == null) {
         LayoutInflater inflater =
-            (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+                (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
         view = inflater.inflate(android.R.layout.simple_list_item_2, null);
       }
 

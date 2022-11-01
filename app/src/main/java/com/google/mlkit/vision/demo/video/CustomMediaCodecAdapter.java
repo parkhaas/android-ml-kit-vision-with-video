@@ -9,13 +9,16 @@ import android.media.MediaFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Surface;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.decoder.CryptoInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecAdapter;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.android.exoplayer2.util.Util;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -24,47 +27,11 @@ import java.nio.ByteBuffer;
  */
 public class CustomMediaCodecAdapter implements MediaCodecAdapter {
 
-    /** A factory for {@link com.google.android.exoplayer2.mediacodec.SynchronousMediaCodecAdapter} instances. */
-    public static class Factory implements MediaCodecAdapter.Factory {
-
-        @Override
-        public MediaCodecAdapter createAdapter(Configuration configuration) throws IOException {
-            @Nullable MediaCodec codec = null;
-            try {
-                codec = createCodec(configuration);
-                TraceUtil.beginSection("configureCodec");
-                codec.configure(
-                        configuration.mediaFormat,
-                        /*configuration.surface*/null,
-                        configuration.crypto,
-                        configuration.flags);
-                TraceUtil.endSection();
-                TraceUtil.beginSection("startCodec");
-                codec.start();
-                TraceUtil.endSection();
-                return new CustomMediaCodecAdapter(codec);
-            } catch (IOException | RuntimeException e) {
-                if (codec != null) {
-                    codec.release();
-                }
-                throw e;
-            }
-        }
-
-        /** Creates a new {@link MediaCodec} instance. */
-        protected MediaCodec createCodec(Configuration configuration) throws IOException {
-            checkNotNull(configuration.codecInfo);
-            String codecName = configuration.codecInfo.name;
-            TraceUtil.beginSection("createCodec:" + codecName);
-            MediaCodec mediaCodec = MediaCodec.createByCodecName(codecName);
-            TraceUtil.endSection();
-            return mediaCodec;
-        }
-    }
-
     private final MediaCodec codec;
-    @Nullable private ByteBuffer[] inputByteBuffers;
-    @Nullable private ByteBuffer[] outputByteBuffers;
+    @Nullable
+    private ByteBuffer[] inputByteBuffers;
+    @Nullable
+    private ByteBuffer[] outputByteBuffers;
 
     private CustomMediaCodecAdapter(MediaCodec mediaCodec) {
         this.codec = mediaCodec;
@@ -118,9 +85,9 @@ public class CustomMediaCodecAdapter implements MediaCodecAdapter {
     }
 
     /*
-    * This is added.
-    */
-    public Image getOutputImage(int index){
+     * This is added.
+     */
+    public Image getOutputImage(int index) {
         return codec.getOutputImage(index);
     }
 
@@ -185,5 +152,47 @@ public class CustomMediaCodecAdapter implements MediaCodecAdapter {
     @Override
     public void setVideoScalingMode(@C.VideoScalingMode int scalingMode) {
         codec.setVideoScalingMode(scalingMode);
+    }
+
+    /**
+     * A factory for {@link com.google.android.exoplayer2.mediacodec.SynchronousMediaCodecAdapter} instances.
+     */
+    public static class Factory implements MediaCodecAdapter.Factory {
+
+        @Override
+        public MediaCodecAdapter createAdapter(Configuration configuration) throws IOException {
+            @Nullable MediaCodec codec = null;
+            try {
+                codec = createCodec(configuration);
+                TraceUtil.beginSection("configureCodec");
+                codec.configure(
+                        configuration.mediaFormat,
+                        /*configuration.surface*/null,
+                        configuration.crypto,
+                        configuration.flags);
+                TraceUtil.endSection();
+                TraceUtil.beginSection("startCodec");
+                codec.start();
+                TraceUtil.endSection();
+                return new CustomMediaCodecAdapter(codec);
+            } catch (IOException | RuntimeException e) {
+                if (codec != null) {
+                    codec.release();
+                }
+                throw e;
+            }
+        }
+
+        /**
+         * Creates a new {@link MediaCodec} instance.
+         */
+        protected MediaCodec createCodec(Configuration configuration) throws IOException {
+            checkNotNull(configuration.codecInfo);
+            String codecName = configuration.codecInfo.name;
+            TraceUtil.beginSection("createCodec:" + codecName);
+            MediaCodec mediaCodec = MediaCodec.createByCodecName(codecName);
+            TraceUtil.endSection();
+            return mediaCodec;
+        }
     }
 }

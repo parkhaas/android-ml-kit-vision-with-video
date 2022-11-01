@@ -5,12 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.media.Image
-import android.renderscript.Allocation
-import android.renderscript.Element
-import android.renderscript.RenderScript
-import android.renderscript.ScriptIntrinsicYuvToRGB
-import android.renderscript.Type
-import java.nio.ByteBuffer
+import android.renderscript.*
 
 /**
  * Helper class used to efficiently convert a [Media.Image] object from
@@ -35,12 +30,12 @@ class YuvToRgbConverter(context: Context) {
     private lateinit var outputAllocation: Allocation
 
     @Synchronized
-    fun release(){
-        if(::inputAllocation.isInitialized){
+    fun release() {
+        if (::inputAllocation.isInitialized) {
             inputAllocation.destroy()
         }
 
-        if(::outputAllocation.isInitialized){
+        if (::outputAllocation.isInitialized) {
             outputAllocation.destroy()
         }
 
@@ -67,7 +62,7 @@ class YuvToRgbConverter(context: Context) {
     }
 
     @Synchronized
-    fun yuvToRgb(yuvBuffer: ByteArray, output: Bitmap, imageFormat: Int){
+    fun yuvToRgb(yuvBuffer: ByteArray, output: Bitmap, imageFormat: Int) {
         // Ensure that the RenderScript inputs and outputs are allocated
         if (!::inputAllocation.isInitialized) {
             // Explicitly create an element with type NV21, since that's the pixel format we use
@@ -181,7 +176,8 @@ class YuvToRgbConverter(context: Context) {
             for (row in 0 until planeHeight) {
                 // Move buffer position to the beginning of this row
                 planeBuffer.position(
-                    (row + planeCrop.top) * rowStride + planeCrop.left * pixelStride)
+                    (row + planeCrop.top) * rowStride + planeCrop.left * pixelStride
+                )
 
                 if (pixelStride == 1 && outputStride == 1) {
                     // When there is a single stride value for pixel and output, we can just copy

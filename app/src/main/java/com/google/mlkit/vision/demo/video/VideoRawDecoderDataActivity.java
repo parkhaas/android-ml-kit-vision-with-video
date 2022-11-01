@@ -18,7 +18,7 @@ import com.google.mlkit.vision.demo.java.videoactivity.YuvToRgbConverter;
 import java.nio.ByteBuffer;
 
 public class VideoRawDecoderDataActivity extends VideoBaseActivity implements
-        CustomRenderersFactory.VideoFrameDataListener{
+        CustomRenderersFactory.VideoFrameDataListener {
 
     private ImageView frameImageView;
     private YuvToRgbConverter yuvToRgbConverter;
@@ -46,13 +46,13 @@ public class VideoRawDecoderDataActivity extends VideoBaseActivity implements
     @Override
     public void onFrame(@Nullable ByteBuffer data, MediaFormat androidMediaFormat, Format playerFormat) {
         // Not in main thread
-        if(data != null){
+        if (data != null) {
             /*
-            * Color formats of different decoders are different.
-            * We have to apply different raw-data to Bitmap(argb) conversion systems according to color format.
-            * Here we just show YUV to RGB conversion assuming data is YUV formatted.
-            * Following conversion system might not give proper result for all videos.
-            */
+             * Color formats of different decoders are different.
+             * We have to apply different raw-data to Bitmap(argb) conversion systems according to color format.
+             * Here we just show YUV to RGB conversion assuming data is YUV formatted.
+             * Following conversion system might not give proper result for all videos.
+             */
 
             try {
                 int width = playerFormat.width;
@@ -70,10 +70,10 @@ public class VideoRawDecoderDataActivity extends VideoBaseActivity implements
                 data.get(bytes);
 
                 Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                if(frameWidth != bitmap.getWidth() || frameHeight != bitmap.getHeight()){
+                if (frameWidth != bitmap.getWidth() || frameHeight != bitmap.getHeight()) {
                     frameWidth = bitmap.getWidth();
                     frameHeight = bitmap.getHeight();
-                    if(yuvToRgbConverter != null) yuvToRgbConverter.release();
+                    if (yuvToRgbConverter != null) yuvToRgbConverter.release();
                     yuvToRgbConverter = new YuvToRgbConverter(this);
                 }
                 yuvToRgbConverter.yuvToRgb(bytes, bitmap, ImageFormat.NV21);
@@ -89,11 +89,11 @@ public class VideoRawDecoderDataActivity extends VideoBaseActivity implements
                 Size size = getSizeForDesiredSize(width, height, 500);
                 Bitmap finalBitmap = Bitmap.createScaledBitmap(bitmap, size.getWidth(), size.getHeight(), true);
 
-                runOnUiThread(()->{
+                runOnUiThread(() -> {
                     //frameImageView.setImageBitmap(finalBitmap);
                     processFrame(finalBitmap);
                 });
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.e("TAG", "onFrame: error: " + e.getMessage());
             }
         }
@@ -102,7 +102,7 @@ public class VideoRawDecoderDataActivity extends VideoBaseActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(yuvToRgbConverter != null){
+        if (yuvToRgbConverter != null) {
             yuvToRgbConverter.release();
         }
     }

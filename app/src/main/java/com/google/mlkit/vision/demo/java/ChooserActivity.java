@@ -49,151 +49,151 @@ import java.util.List;
  * available testing Activities.
  */
 public final class ChooserActivity extends AppCompatActivity
-    implements OnRequestPermissionsResultCallback, AdapterView.OnItemClickListener {
-  private static final String TAG = "ChooserActivity";
-  private static final int PERMISSION_REQUESTS = 1;
+		implements OnRequestPermissionsResultCallback, AdapterView.OnItemClickListener {
+	private static final String TAG = "ChooserActivity";
+	private static final int PERMISSION_REQUESTS = 1;
 
-  private static final Class<?>[] CLASSES =
-      VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
-          ? new Class<?>[] {
-            LivePreviewActivity.class, StillImageActivity.class
-          }
-          : new Class<?>[] {
-              LivePreviewActivity.class,
-              StillImageActivity.class,
-              CameraXLivePreviewActivity.class,
-              CameraXSourceDemoActivity.class
-          };
+	private static final Class<?>[] CLASSES =
+			VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
+					? new Class<?>[]{
+					LivePreviewActivity.class, StillImageActivity.class
+			}
+					: new Class<?>[]{
+					LivePreviewActivity.class,
+					StillImageActivity.class,
+					CameraXLivePreviewActivity.class,
+					CameraXSourceDemoActivity.class
+			};
 
-  private static final int[] DESCRIPTION_IDS =
-      VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
-          ? new int[] {
-            R.string.desc_camera_source_activity, R.string.desc_still_image_activity
-          }
-          : new int[] {
-              R.string.desc_camera_source_activity,
-              R.string.desc_still_image_activity,
-              R.string.desc_camerax_live_preview_activity,
-              R.string.desc_cameraxsource_demo_activity
-          };
+	private static final int[] DESCRIPTION_IDS =
+			VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
+					? new int[]{
+					R.string.desc_camera_source_activity, R.string.desc_still_image_activity
+			}
+					: new int[]{
+					R.string.desc_camera_source_activity,
+					R.string.desc_still_image_activity,
+					R.string.desc_camerax_live_preview_activity,
+					R.string.desc_cameraxsource_demo_activity
+			};
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    if (BuildConfig.DEBUG) {
-      StrictMode.setThreadPolicy(
-          new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
-      StrictMode.setVmPolicy(
-          new StrictMode.VmPolicy.Builder()
-              .detectLeakedSqlLiteObjects()
-              .detectLeakedClosableObjects()
-              .penaltyLog()
-              .build());
-    }
-    super.onCreate(savedInstanceState);
-    Log.d(TAG, "onCreate");
+	private static boolean isPermissionGranted(Context context, String permission) {
+		if (ContextCompat.checkSelfPermission(context, permission)
+				== PackageManager.PERMISSION_GRANTED) {
+			Log.i(TAG, "Permission granted: " + permission);
+			return true;
+		}
+		Log.i(TAG, "Permission NOT granted: " + permission);
+		return false;
+	}
 
-    setContentView(R.layout.activity_chooser);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(
+					new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+			StrictMode.setVmPolicy(
+					new StrictMode.VmPolicy.Builder()
+							.detectLeakedSqlLiteObjects()
+							.detectLeakedClosableObjects()
+							.penaltyLog()
+							.build());
+		}
+		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate");
 
-    // Set up ListView and Adapter
-    ListView listView = findViewById(R.id.test_activity_list_view);
+		setContentView(R.layout.activity_chooser);
 
-    MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
-    adapter.setDescriptionIds(DESCRIPTION_IDS);
+		// Set up ListView and Adapter
+		ListView listView = findViewById(R.id.test_activity_list_view);
 
-    listView.setAdapter(adapter);
-    listView.setOnItemClickListener(this);
+		MyArrayAdapter adapter = new MyArrayAdapter(this, android.R.layout.simple_list_item_2, CLASSES);
+		adapter.setDescriptionIds(DESCRIPTION_IDS);
 
-    if (!allPermissionsGranted()) {
-      getRuntimePermissions();
-    }
-  }
+		listView.setAdapter(adapter);
+		listView.setOnItemClickListener(this);
 
-  @Override
-  public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    Class<?> clicked = CLASSES[position];
-    startActivity(new Intent(this, clicked));
-  }
+		if (!allPermissionsGranted()) {
+			getRuntimePermissions();
+		}
+	}
 
-  private String[] getRequiredPermissions() {
-    try {
-      PackageInfo info =
-          this.getPackageManager()
-              .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
-      String[] ps = info.requestedPermissions;
-      if (ps != null && ps.length > 0) {
-        return ps;
-      } else {
-        return new String[0];
-      }
-    } catch (Exception e) {
-      return new String[0];
-    }
-  }
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		Class<?> clicked = CLASSES[position];
+		startActivity(new Intent(this, clicked));
+	}
 
-  private boolean allPermissionsGranted() {
-    for (String permission : getRequiredPermissions()) {
-      if (!isPermissionGranted(this, permission)) {
-        return false;
-      }
-    }
-    return true;
-  }
+	private String[] getRequiredPermissions() {
+		try {
+			PackageInfo info =
+					this.getPackageManager()
+							.getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
+			String[] ps = info.requestedPermissions;
+			if (ps != null && ps.length > 0) {
+				return ps;
+			} else {
+				return new String[0];
+			}
+		} catch (Exception e) {
+			return new String[0];
+		}
+	}
 
-  private void getRuntimePermissions() {
-    List<String> allNeededPermissions = new ArrayList<>();
-    for (String permission : getRequiredPermissions()) {
-      if (!isPermissionGranted(this, permission)) {
-        allNeededPermissions.add(permission);
-      }
-    }
+	private boolean allPermissionsGranted() {
+		for (String permission : getRequiredPermissions()) {
+			if (!isPermissionGranted(this, permission)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    if (!allNeededPermissions.isEmpty()) {
-      ActivityCompat.requestPermissions(
-          this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
-    }
-  }
+	private void getRuntimePermissions() {
+		List<String> allNeededPermissions = new ArrayList<>();
+		for (String permission : getRequiredPermissions()) {
+			if (!isPermissionGranted(this, permission)) {
+				allNeededPermissions.add(permission);
+			}
+		}
 
-  private static boolean isPermissionGranted(Context context, String permission) {
-    if (ContextCompat.checkSelfPermission(context, permission)
-        == PackageManager.PERMISSION_GRANTED) {
-      Log.i(TAG, "Permission granted: " + permission);
-      return true;
-    }
-    Log.i(TAG, "Permission NOT granted: " + permission);
-    return false;
-  }
+		if (!allNeededPermissions.isEmpty()) {
+			ActivityCompat.requestPermissions(
+					this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
+		}
+	}
 
-  private static class MyArrayAdapter extends ArrayAdapter<Class<?>> {
+	private static class MyArrayAdapter extends ArrayAdapter<Class<?>> {
 
-    private final Context context;
-    private final Class<?>[] classes;
-    private int[] descriptionIds;
+		private final Context context;
+		private final Class<?>[] classes;
+		private int[] descriptionIds;
 
-    MyArrayAdapter(Context context, int resource, Class<?>[] objects) {
-      super(context, resource, objects);
+		MyArrayAdapter(Context context, int resource, Class<?>[] objects) {
+			super(context, resource, objects);
 
-      this.context = context;
-      classes = objects;
-    }
+			this.context = context;
+			classes = objects;
+		}
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-      View view = convertView;
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View view = convertView;
 
-      if (convertView == null) {
-        LayoutInflater inflater =
-            (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
-        view = inflater.inflate(android.R.layout.simple_list_item_2, null);
-      }
+			if (convertView == null) {
+				LayoutInflater inflater =
+						(LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+				view = inflater.inflate(android.R.layout.simple_list_item_2, null);
+			}
 
-      ((TextView) view.findViewById(android.R.id.text1)).setText(classes[position].getSimpleName());
-      ((TextView) view.findViewById(android.R.id.text2)).setText(descriptionIds[position]);
+			((TextView) view.findViewById(android.R.id.text1)).setText(classes[position].getSimpleName());
+			((TextView) view.findViewById(android.R.id.text2)).setText(descriptionIds[position]);
 
-      return view;
-    }
+			return view;
+		}
 
-    void setDescriptionIds(int[] descriptionIds) {
-      this.descriptionIds = descriptionIds;
-    }
-  }
+		void setDescriptionIds(int[] descriptionIds) {
+			this.descriptionIds = descriptionIds;
+		}
+	}
 }
