@@ -9,7 +9,7 @@
     minSdkVersion value. In code, will check SDK version, before calling CameraX
     APIs.
     -->
-    <uses-sdk tools:overrideLibrary="           androidx.camera.camera2, androidx.camera.core,           androidx.camera.view, androidx.camera.lifecycle" />
+    <uses-sdk tools:overrideLibrary="androidx.camera.camera2, androidx.camera.core, androidx.camera.view, androidx.camera.lifecycle" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -52,22 +52,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".video.VideoGLESActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme" />
-        <activity
             android:name=".video.VideoTextureViewActivity"
             android:exported="true"
             android:theme="@style/AppTheme" />
-        <activity
-            android:name=".video.VideoRawDecoderDataActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme" />
 
-        <activity
-            android:name=".java.LivePreviewActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme" />
         <activity
             android:name=".java.CameraXLivePreviewActivity"
             android:exported="true"

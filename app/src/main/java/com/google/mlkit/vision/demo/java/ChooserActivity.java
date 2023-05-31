@@ -20,8 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -40,8 +38,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.mlkit.vision.demo.BuildConfig;
 import com.google.mlkit.vision.demo.R;
-import com.google.mlkit.vision.demo.video.VideoGLESActivity;
-import com.google.mlkit.vision.demo.video.VideoRawDecoderDataActivity;
 import com.google.mlkit.vision.demo.video.VideoTextureViewActivity;
 
 import java.util.ArrayList;
@@ -57,42 +53,19 @@ public final class ChooserActivity extends AppCompatActivity
     private static final int PERMISSION_REQUESTS = 1;
 
     private static final Class<?>[] CLASSES =
-            VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
-                    ? new Class<?>[]{
-                    LivePreviewActivity.class,
-                    StillImageActivity.class,
-                    VideoGLESActivity.class,
-                    VideoTextureViewActivity.class,
-                    VideoRawDecoderDataActivity.class
-            }
-                    : new Class<?>[]{
-                    LivePreviewActivity.class,
-                    StillImageActivity.class,
+            new Class<?>[]{
                     CameraXLivePreviewActivity.class,
                     CameraXSourceDemoActivity.class,
-                    VideoGLESActivity.class,
-                    VideoTextureViewActivity.class,
-                    VideoRawDecoderDataActivity.class
+                    StillImageActivity.class,
+                    VideoTextureViewActivity.class
             };
 
-    private static final int[] DESCRIPTION_IDS =
-            VERSION.SDK_INT < VERSION_CODES.LOLLIPOP
-                    ? new int[]{
-                    R.string.desc_camera_source_activity,
-                    R.string.desc_still_image_activity,
-                    R.string.desc_video_opengles_activity,
-                    R.string.desc_video_textureview_activity,
-                    R.string.desc_video_rawdecoderdata_activity
-            }
-                    : new int[]{
-                    R.string.desc_camera_source_activity,
-                    R.string.desc_still_image_activity,
-                    R.string.desc_camerax_live_preview_activity,
-                    R.string.desc_cameraxsource_demo_activity,
-                    R.string.desc_video_opengles_activity,
-                    R.string.desc_video_textureview_activity,
-                    R.string.desc_video_rawdecoderdata_activity
-            };
+    private static final int[] DESCRIPTION_IDS = new int[]{
+            R.string.desc_camerax_live_preview_activity,
+            R.string.desc_cameraxsource_demo_activity,
+            R.string.desc_still_image_activity,
+            R.string.desc_video_textureview_activity
+    };
 
     private static boolean isPermissionGranted(Context context, String permission) {
         if (ContextCompat.checkSelfPermission(context, permission)

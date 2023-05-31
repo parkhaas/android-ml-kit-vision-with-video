@@ -72,11 +72,9 @@ public abstract class VideoBaseActivity extends AppCompatActivity {
         });
     }
 
-    protected abstract @NonNull
-    SimpleExoPlayer createPlayer();
+    protected abstract @NonNull SimpleExoPlayer createPlayer();
 
-    protected abstract @Nullable
-    View createVideoFrameView();
+    protected abstract @Nullable View createVideoFrameView();
 
     protected Size getSizeForDesiredSize(int width, int height, int desiredSize) {
         int w, h;
@@ -175,21 +173,19 @@ public abstract class VideoBaseActivity extends AppCompatActivity {
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // attaching data adapter to spinner
         featureSpinner.setAdapter(dataAdapter);
-        featureSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
+        featureSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
-                    @Override
-                    public void onItemSelected(
-                            AdapterView<?> parentView, View selectedItemView, int pos, long id) {
-                        selectedProcessor = parentView.getItemAtPosition(pos).toString();
-                        createImageProcessor();
-                        if (lastFrame != null) processFrame(lastFrame);
-                    }
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int pos, long id) {
+                selectedProcessor = parentView.getItemAtPosition(pos).toString();
+                createImageProcessor();
+                if (lastFrame != null) processFrame(lastFrame);
+            }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> arg0) {
-                    }
-                });
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
     }
 
     private void createImageProcessor() {
@@ -207,11 +203,7 @@ public abstract class VideoBaseActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             Log.e(TAG, "Can not create image processor: " + selectedProcessor, e);
-            Toast.makeText(
-                            getApplicationContext(),
-                            "Can not create image processor: " + e.getMessage(),
-                            Toast.LENGTH_LONG)
-                    .show();
+            Toast.makeText(getApplicationContext(), "Can not create image processor: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

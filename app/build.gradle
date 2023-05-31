@@ -106,6 +106,12 @@ dependencies {
     // On Device Machine Learnings
     implementation "com.google.android.odml:image:1.0.0-beta1"
 
+
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.4.3'
+    // Import the GPU delegate plugin Library for GPU inference
+    implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.3'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.12.0'
+
     // Exoplayer
     def exoplayerVersion = "2.14.2"
     implementation "com.google.android.exoplayer:exoplayer:$exoplayerVersion"
@@ -115,4 +121,6 @@ configurations {
     // Resolves dependency conflict caused by some dependencies use
     // com.google.guava:guava and com.google.guava:listenablefuture together.
     all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+
+
 }
