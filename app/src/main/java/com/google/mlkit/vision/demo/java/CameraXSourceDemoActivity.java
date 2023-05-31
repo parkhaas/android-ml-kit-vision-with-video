@@ -62,224 +62,192 @@ import java.util.Objects;
  */
 @KeepName
 @RequiresApi(VERSION_CODES.LOLLIPOP)
-public final class CameraXSourceDemoActivity extends AppCompatActivity
-		implements OnRequestPermissionsResultCallback, CompoundButton.OnCheckedChangeListener {
-	private static final String TAG = "CameraXSourceDemo";
-	private static final int PERMISSION_REQUESTS = 1;
+public final class CameraXSourceDemoActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, CompoundButton.OnCheckedChangeListener {
+    private static final String TAG = "CameraXSourceDemo";
+    private static final int PERMISSION_REQUESTS = 1;
 
-	private static final LocalModel localModel =
-			new LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build();
+    //    private static final LocalModel localModel = new LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build();
+    private static final LocalModel localModel = new LocalModel.Builder().setAssetFilePath("test.tflite").build();
 
-	private PreviewView previewView;
-	private GraphicOverlay graphicOverlay;
+    private PreviewView previewView;
+    private GraphicOverlay graphicOverlay;
 
-	private boolean needUpdateGraphicOverlayImageSourceInfo;
+    private boolean needUpdateGraphicOverlayImageSourceInfo;
 
-	private int lensFacing = CameraSourceConfig.CAMERA_FACING_BACK;
-	private DetectionTaskCallback<List<DetectedObject>> detectionTaskCallback;
-	private CameraXSource cameraXSource;
-	private CustomObjectDetectorOptions customObjectDetectorOptions;
-	private Size targetResolution;
+    private int lensFacing = CameraSourceConfig.CAMERA_FACING_BACK;
+    private DetectionTaskCallback<List<DetectedObject>> detectionTaskCallback;
+    private CameraXSource cameraXSource;
+    private CustomObjectDetectorOptions customObjectDetectorOptions;
+    private Size targetResolution;
 
-	private static boolean isPermissionGranted(Context context, String permission) {
-		if (ContextCompat.checkSelfPermission(context, permission)
-				== PackageManager.PERMISSION_GRANTED) {
-			Log.i(TAG, "Permission granted: " + permission);
-			return true;
-		}
-		Log.i(TAG, "Permission NOT granted: " + permission);
-		return false;
-	}
+    private static boolean isPermissionGranted(Context context, String permission) {
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission granted: " + permission);
+            return true;
+        }
+        Log.i(TAG, "Permission NOT granted: " + permission);
+        return false;
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.d(TAG, "onCreate");
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
-		setContentView(R.layout.activity_vision_cameraxsource_demo);
-		previewView = findViewById(R.id.preview_view);
-		if (previewView == null) {
-			Log.d(TAG, "previewView is null");
-		}
-		graphicOverlay = findViewById(R.id.graphic_overlay);
-		if (graphicOverlay == null) {
-			Log.d(TAG, "graphicOverlay is null");
-		}
+        setContentView(R.layout.activity_vision_cameraxsource_demo);
+        previewView = findViewById(R.id.preview_view);
+        if (previewView == null) {
+            Log.d(TAG, "previewView is null");
+        }
+        graphicOverlay = findViewById(R.id.graphic_overlay);
+        if (graphicOverlay == null) {
+            Log.d(TAG, "graphicOverlay is null");
+        }
 
-		ToggleButton facingSwitch = findViewById(R.id.facing_switch);
-		facingSwitch.setOnCheckedChangeListener(this);
+        ToggleButton facingSwitch = findViewById(R.id.facing_switch);
+        facingSwitch.setOnCheckedChangeListener(this);
 
-		ImageView settingsButton = findViewById(R.id.settings_button);
-		settingsButton.setOnClickListener(
-				v -> {
-					Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-					intent.putExtra(
-							SettingsActivity.EXTRA_LAUNCH_SOURCE,
-							SettingsActivity.LaunchSource.CAMERAXSOURCE_DEMO);
-					startActivity(intent);
-				});
-		detectionTaskCallback =
-				detectionTask ->
-						detectionTask
-								.addOnSuccessListener(this::onDetectionTaskSuccess)
-								.addOnFailureListener(this::onDetectionTaskFailure);
-		if (!allPermissionsGranted()) {
-			getRuntimePermissions();
-		}
-	}
+        ImageView settingsButton = findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            intent.putExtra(SettingsActivity.EXTRA_LAUNCH_SOURCE, SettingsActivity.LaunchSource.CAMERAXSOURCE_DEMO);
+            startActivity(intent);
+        });
+        detectionTaskCallback = detectionTask -> detectionTask.addOnSuccessListener(this::onDetectionTaskSuccess).addOnFailureListener(this::onDetectionTaskFailure);
+        if (!allPermissionsGranted()) {
+            getRuntimePermissions();
+        }
+    }
 
-	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		lensFacing =
-				lensFacing == CameraSourceConfig.CAMERA_FACING_FRONT
-						? CameraSourceConfig.CAMERA_FACING_BACK
-						: CameraSourceConfig.CAMERA_FACING_FRONT;
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        lensFacing = lensFacing == CameraSourceConfig.CAMERA_FACING_FRONT ? CameraSourceConfig.CAMERA_FACING_BACK : CameraSourceConfig.CAMERA_FACING_FRONT;
 
-		createThenStartCameraXSource();
-	}
+        createThenStartCameraXSource();
+    }
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		if (cameraXSource != null
-				&& PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel)
-				.equals(customObjectDetectorOptions)
-				&& PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing) != null
-				&& Objects.requireNonNull(
-						PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing))
-				.equals(targetResolution)) {
-			cameraXSource.start();
-		} else {
-			createThenStartCameraXSource();
-		}
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (cameraXSource != null && PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel).equals(customObjectDetectorOptions) && PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing) != null && Objects.requireNonNull(PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing)).equals(targetResolution)) {
+            cameraXSource.start();
+        } else {
+            createThenStartCameraXSource();
+        }
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (cameraXSource != null) {
-			cameraXSource.stop();
-		}
-	}
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (cameraXSource != null) {
+            cameraXSource.stop();
+        }
+    }
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (cameraXSource != null) {
-			cameraXSource.close();
-		}
-	}
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (cameraXSource != null) {
+            cameraXSource.close();
+        }
+    }
 
-	@Override
-	public void onRequestPermissionsResult(
-			int requestCode, String[] permissions, int[] grantResults) {
-		Log.i(TAG, "Permission granted!");
-		createThenStartCameraXSource();
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-	}
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.i(TAG, "Permission granted!");
+        createThenStartCameraXSource();
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
-	private void createThenStartCameraXSource() {
-		if (cameraXSource != null) {
-			cameraXSource.close();
-		}
-		customObjectDetectorOptions =
-				PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(
-						getApplicationContext(), localModel);
-		ObjectDetector objectDetector = ObjectDetection.getClient(customObjectDetectorOptions);
-		CameraSourceConfig.Builder builder =
-				new CameraSourceConfig.Builder(
-						getApplicationContext(), objectDetector, detectionTaskCallback)
-						.setFacing(lensFacing);
-		targetResolution =
-				PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing);
-		if (targetResolution != null) {
-			builder.setRequestedPreviewSize(targetResolution.getWidth(), targetResolution.getHeight());
-		}
-		cameraXSource = new CameraXSource(builder.build(), previewView);
-		needUpdateGraphicOverlayImageSourceInfo = true;
-		cameraXSource.start();
-	}
+    private void createThenStartCameraXSource() {
+        if (cameraXSource != null) {
+            cameraXSource.close();
+        }
+        customObjectDetectorOptions = PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(getApplicationContext(), localModel);
+        ObjectDetector objectDetector = ObjectDetection.getClient(customObjectDetectorOptions);
+        CameraSourceConfig.Builder builder = new CameraSourceConfig.Builder(getApplicationContext(), objectDetector, detectionTaskCallback).setFacing(lensFacing);
+        targetResolution = PreferenceUtils.getCameraXTargetResolution(getApplicationContext(), lensFacing);
+        if (targetResolution != null) {
+            builder.setRequestedPreviewSize(targetResolution.getWidth(), targetResolution.getHeight());
+        }
+        cameraXSource = new CameraXSource(builder.build(), previewView);
+        needUpdateGraphicOverlayImageSourceInfo = true;
+        cameraXSource.start();
+    }
 
-	private void onDetectionTaskSuccess(List<DetectedObject> results) {
-		graphicOverlay.clear();
-		if (needUpdateGraphicOverlayImageSourceInfo) {
-			Size size = cameraXSource.getPreviewSize();
-			if (size != null) {
-				Log.d(TAG, "preview width: " + size.getWidth());
-				Log.d(TAG, "preview height: " + size.getHeight());
-				boolean isImageFlipped =
-						cameraXSource.getCameraFacing() == CameraSourceConfig.CAMERA_FACING_FRONT;
-				if (isPortraitMode()) {
-					// Swap width and height sizes when in portrait, since it will be rotated by
-					// 90 degrees. The camera preview and the image being processed have the same size.
-					graphicOverlay.setImageSourceInfo(size.getHeight(), size.getWidth(), isImageFlipped);
-				} else {
-					graphicOverlay.setImageSourceInfo(size.getWidth(), size.getHeight(), isImageFlipped);
-				}
-				needUpdateGraphicOverlayImageSourceInfo = false;
-			} else {
-				Log.d(TAG, "previewsize is null");
-			}
-		}
-		Log.v(TAG, "Number of object been detected: " + results.size());
-		for (DetectedObject object : results) {
-			graphicOverlay.add(new ObjectGraphic(graphicOverlay, object));
-		}
-		graphicOverlay.add(new InferenceInfoGraphic(graphicOverlay));
-		graphicOverlay.postInvalidate();
-	}
+    private void onDetectionTaskSuccess(List<DetectedObject> results) {
+        graphicOverlay.clear();
+        if (needUpdateGraphicOverlayImageSourceInfo) {
+            Size size = cameraXSource.getPreviewSize();
+            if (size != null) {
+                Log.d(TAG, "preview width: " + size.getWidth());
+                Log.d(TAG, "preview height: " + size.getHeight());
+                boolean isImageFlipped = cameraXSource.getCameraFacing() == CameraSourceConfig.CAMERA_FACING_FRONT;
+                if (isPortraitMode()) {
+                    // Swap width and height sizes when in portrait, since it will be rotated by
+                    // 90 degrees. The camera preview and the image being processed have the same size.
+                    graphicOverlay.setImageSourceInfo(size.getHeight(), size.getWidth(), isImageFlipped);
+                } else {
+                    graphicOverlay.setImageSourceInfo(size.getWidth(), size.getHeight(), isImageFlipped);
+                }
+                needUpdateGraphicOverlayImageSourceInfo = false;
+            } else {
+                Log.d(TAG, "previewsize is null");
+            }
+        }
+        Log.v(TAG, "Number of object been detected: " + results.size());
+        for (DetectedObject object : results) {
+            graphicOverlay.add(new ObjectGraphic(graphicOverlay, object));
+        }
+        graphicOverlay.add(new InferenceInfoGraphic(graphicOverlay));
+        graphicOverlay.postInvalidate();
+    }
 
-	private void onDetectionTaskFailure(Exception e) {
-		graphicOverlay.clear();
-		graphicOverlay.postInvalidate();
-		String error = "Failed to process. Error: " + e.getLocalizedMessage();
-		Toast.makeText(
-						graphicOverlay.getContext(), error + "\nCause: " + e.getCause(), Toast.LENGTH_SHORT)
-				.show();
-		Log.d(TAG, error);
-	}
+    private void onDetectionTaskFailure(Exception e) {
+        graphicOverlay.clear();
+        graphicOverlay.postInvalidate();
+        String error = "Failed to process. Error: " + e.getLocalizedMessage();
+        Toast.makeText(graphicOverlay.getContext(), error + "\nCause: " + e.getCause(), Toast.LENGTH_SHORT).show();
+        Log.d(TAG, error);
+    }
 
-	private boolean isPortraitMode() {
-		return getApplicationContext().getResources().getConfiguration().orientation
-				!= Configuration.ORIENTATION_LANDSCAPE;
-	}
+    private boolean isPortraitMode() {
+        return getApplicationContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
+    }
 
-	private boolean allPermissionsGranted() {
-		for (String permission : getRequiredPermissions()) {
-			if (!isPermissionGranted(this, permission)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private boolean allPermissionsGranted() {
+        for (String permission : getRequiredPermissions()) {
+            if (!isPermissionGranted(this, permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private String[] getRequiredPermissions() {
-		try {
-			PackageInfo info =
-					this.getPackageManager()
-							.getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
-			String[] ps = info.requestedPermissions;
-			if (ps != null && ps.length > 0) {
-				return ps;
-			} else {
-				return new String[0];
-			}
-		} catch (Exception e) {
-			return new String[0];
-		}
-	}
+    private String[] getRequiredPermissions() {
+        try {
+            PackageInfo info = this.getPackageManager().getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
+            String[] ps = info.requestedPermissions;
+            if (ps != null && ps.length > 0) {
+                return ps;
+            } else {
+                return new String[0];
+            }
+        } catch (Exception e) {
+            return new String[0];
+        }
+    }
 
-	private void getRuntimePermissions() {
-		List<String> allNeededPermissions = new ArrayList<>();
-		for (String permission : getRequiredPermissions()) {
-			if (!isPermissionGranted(this, permission)) {
-				allNeededPermissions.add(permission);
-			}
-		}
+    private void getRuntimePermissions() {
+        List<String> allNeededPermissions = new ArrayList<>();
+        for (String permission : getRequiredPermissions()) {
+            if (!isPermissionGranted(this, permission)) {
+                allNeededPermissions.add(permission);
+            }
+        }
 
-		if (!allNeededPermissions.isEmpty()) {
-			ActivityCompat.requestPermissions(
-					this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
-		}
-	}
+        if (!allNeededPermissions.isEmpty()) {
+            ActivityCompat.requestPermissions(this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
+        }
+    }
 }
