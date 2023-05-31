@@ -48,9 +48,6 @@ dependencies {
     // Face features
     implementation 'com.google.mlkit:face-detection:16.1.2'
 
-    // Text features
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.3.0'
-
     // Image labeling
     implementation 'com.google.mlkit:image-labeling:17.0.5'
     // Or comment the dependency above and uncomment the dependency below to

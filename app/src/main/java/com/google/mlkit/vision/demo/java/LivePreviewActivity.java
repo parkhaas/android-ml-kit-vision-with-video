@@ -48,7 +48,6 @@ import com.google.mlkit.vision.demo.java.labeldetector.LabelDetectorProcessor;
 import com.google.mlkit.vision.demo.java.objectdetector.ObjectDetectorProcessor;
 import com.google.mlkit.vision.demo.java.posedetector.PoseDetectorProcessor;
 import com.google.mlkit.vision.demo.java.segmenter.SegmenterProcessor;
-import com.google.mlkit.vision.demo.java.textdetector.TextRecognitionProcessor;
 import com.google.mlkit.vision.demo.preference.PreferenceUtils;
 import com.google.mlkit.vision.demo.preference.SettingsActivity;
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
@@ -74,7 +73,6 @@ public final class LivePreviewActivity extends AppCompatActivity
     private static final String CUSTOM_AUTOML_OBJECT_DETECTION =
             "Custom AutoML Object Detection (Flower)";
     private static final String FACE_DETECTION = "Face Detection";
-    private static final String TEXT_RECOGNITION = "Text Recognition";
     private static final String IMAGE_LABELING = "Image Labeling";
     private static final String IMAGE_LABELING_CUSTOM = "Custom Image Labeling (Birds)";
     private static final String CUSTOM_AUTOML_LABELING = "Custom AutoML Image Labeling (Flower)";
@@ -121,7 +119,6 @@ public final class LivePreviewActivity extends AppCompatActivity
         options.add(OBJECT_DETECTION_CUSTOM);
         options.add(CUSTOM_AUTOML_OBJECT_DETECTION);
         options.add(FACE_DETECTION);
-        options.add(TEXT_RECOGNITION);
         options.add(IMAGE_LABELING);
         options.add(IMAGE_LABELING_CUSTOM);
         options.add(CUSTOM_AUTOML_LABELING);
@@ -224,10 +221,6 @@ public final class LivePreviewActivity extends AppCompatActivity
                                     this, customAutoMLODTLocalModel);
                     cameraSource.setMachineLearningFrameProcessor(
                             new ObjectDetectorProcessor(this, customAutoMLODTOptions));
-                    break;
-                case TEXT_RECOGNITION:
-                    Log.i(TAG, "Using on-device Text recognition Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(this));
                     break;
                 case FACE_DETECTION:
                     Log.i(TAG, "Using Face Detector Processor");
