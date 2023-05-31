@@ -58,7 +58,6 @@ import com.google.mlkit.vision.demo.CameraXViewModel;
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.demo.VisionImageProcessor;
-import com.google.mlkit.vision.demo.java.barcodescanner.BarcodeScannerProcessor;
 import com.google.mlkit.vision.demo.java.facedetector.FaceDetectorProcessor;
 import com.google.mlkit.vision.demo.java.labeldetector.LabelDetectorProcessor;
 import com.google.mlkit.vision.demo.java.objectdetector.ObjectDetectorProcessor;
@@ -82,428 +81,422 @@ import java.util.List;
 @KeepName
 @RequiresApi(VERSION_CODES.LOLLIPOP)
 public final class CameraXLivePreviewActivity extends AppCompatActivity
-		implements OnRequestPermissionsResultCallback,
-		OnItemSelectedListener,
-		CompoundButton.OnCheckedChangeListener {
-	private static final String TAG = "CameraXLivePreview";
-	private static final int PERMISSION_REQUESTS = 1;
+        implements OnRequestPermissionsResultCallback,
+        OnItemSelectedListener,
+        CompoundButton.OnCheckedChangeListener {
+    private static final String TAG = "CameraXLivePreview";
+    private static final int PERMISSION_REQUESTS = 1;
 
-	private static final String OBJECT_DETECTION = "Object Detection";
-	private static final String OBJECT_DETECTION_CUSTOM = "Custom Object Detection";
-	private static final String CUSTOM_AUTOML_OBJECT_DETECTION =
-			"Custom AutoML Object Detection (Flower)";
-	private static final String FACE_DETECTION = "Face Detection";
-	private static final String TEXT_RECOGNITION = "Text Recognition";
-	private static final String BARCODE_SCANNING = "Barcode Scanning";
-	private static final String IMAGE_LABELING = "Image Labeling";
-	private static final String IMAGE_LABELING_CUSTOM = "Custom Image Labeling (Birds)";
-	private static final String CUSTOM_AUTOML_LABELING = "Custom AutoML Image Labeling (Flower)";
-	private static final String POSE_DETECTION = "Pose Detection";
-	private static final String SELFIE_SEGMENTATION = "Selfie Segmentation";
+    private static final String OBJECT_DETECTION = "Object Detection";
+    private static final String OBJECT_DETECTION_CUSTOM = "Custom Object Detection";
+    private static final String CUSTOM_AUTOML_OBJECT_DETECTION =
+            "Custom AutoML Object Detection (Flower)";
+    private static final String FACE_DETECTION = "Face Detection";
+    private static final String TEXT_RECOGNITION = "Text Recognition";
+    private static final String IMAGE_LABELING = "Image Labeling";
+    private static final String IMAGE_LABELING_CUSTOM = "Custom Image Labeling (Birds)";
+    private static final String CUSTOM_AUTOML_LABELING = "Custom AutoML Image Labeling (Flower)";
+    private static final String POSE_DETECTION = "Pose Detection";
+    private static final String SELFIE_SEGMENTATION = "Selfie Segmentation";
 
-	private static final String STATE_SELECTED_MODEL = "selected_model";
+    private static final String STATE_SELECTED_MODEL = "selected_model";
 
-	private PreviewView previewView;
-	private GraphicOverlay graphicOverlay;
+    private PreviewView previewView;
+    private GraphicOverlay graphicOverlay;
 
-	@Nullable
-	private ProcessCameraProvider cameraProvider;
-	@Nullable
-	private Preview previewUseCase;
-	@Nullable
-	private ImageAnalysis analysisUseCase;
-	@Nullable
-	private VisionImageProcessor imageProcessor;
-	private boolean needUpdateGraphicOverlayImageSourceInfo;
+    @Nullable
+    private ProcessCameraProvider cameraProvider;
+    @Nullable
+    private Preview previewUseCase;
+    @Nullable
+    private ImageAnalysis analysisUseCase;
+    @Nullable
+    private VisionImageProcessor imageProcessor;
+    private boolean needUpdateGraphicOverlayImageSourceInfo;
 
-	private String selectedModel = OBJECT_DETECTION;
-	private int lensFacing = CameraSelector.LENS_FACING_BACK;
-	private CameraSelector cameraSelector;
+    private String selectedModel = OBJECT_DETECTION;
+    private int lensFacing = CameraSelector.LENS_FACING_BACK;
+    private CameraSelector cameraSelector;
 
-	private static boolean isPermissionGranted(Context context, String permission) {
-		if (ContextCompat.checkSelfPermission(context, permission)
-				== PackageManager.PERMISSION_GRANTED) {
-			Log.i(TAG, "Permission granted: " + permission);
-			return true;
-		}
-		Log.i(TAG, "Permission NOT granted: " + permission);
-		return false;
-	}
+    private static boolean isPermissionGranted(Context context, String permission) {
+        if (ContextCompat.checkSelfPermission(context, permission)
+                == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission granted: " + permission);
+            return true;
+        }
+        Log.i(TAG, "Permission NOT granted: " + permission);
+        return false;
+    }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.d(TAG, "onCreate");
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
-		if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) {
-			Toast.makeText(
-							getApplicationContext(),
-							"CameraX is only supported on SDK version >=21. Current SDK version is "
-									+ VERSION.SDK_INT,
-							Toast.LENGTH_LONG)
-					.show();
-			return;
-		}
+        if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) {
+            Toast.makeText(
+                            getApplicationContext(),
+                            "CameraX is only supported on SDK version >=21. Current SDK version is "
+                                    + VERSION.SDK_INT,
+                            Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
 
-		if (savedInstanceState != null) {
-			selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, OBJECT_DETECTION);
-		}
-		cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
+        if (savedInstanceState != null) {
+            selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, OBJECT_DETECTION);
+        }
+        cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
 
-		setContentView(R.layout.activity_vision_camerax_live_preview);
-		previewView = findViewById(R.id.preview_view);
-		if (previewView == null) {
-			Log.d(TAG, "previewView is null");
-		}
-		graphicOverlay = findViewById(R.id.graphic_overlay);
-		if (graphicOverlay == null) {
-			Log.d(TAG, "graphicOverlay is null");
-		}
+        setContentView(R.layout.activity_vision_camerax_live_preview);
+        previewView = findViewById(R.id.preview_view);
+        if (previewView == null) {
+            Log.d(TAG, "previewView is null");
+        }
+        graphicOverlay = findViewById(R.id.graphic_overlay);
+        if (graphicOverlay == null) {
+            Log.d(TAG, "graphicOverlay is null");
+        }
 
-		Spinner spinner = findViewById(R.id.spinner);
-		List<String> options = new ArrayList<>();
-		options.add(OBJECT_DETECTION);
-		options.add(OBJECT_DETECTION_CUSTOM);
-		options.add(CUSTOM_AUTOML_OBJECT_DETECTION);
-		options.add(FACE_DETECTION);
-		options.add(TEXT_RECOGNITION);
-		options.add(BARCODE_SCANNING);
-		options.add(IMAGE_LABELING);
-		options.add(IMAGE_LABELING_CUSTOM);
-		options.add(CUSTOM_AUTOML_LABELING);
-		options.add(POSE_DETECTION);
-		options.add(SELFIE_SEGMENTATION);
+        Spinner spinner = findViewById(R.id.spinner);
+        List<String> options = new ArrayList<>();
+        options.add(OBJECT_DETECTION);
+        options.add(OBJECT_DETECTION_CUSTOM);
+        options.add(CUSTOM_AUTOML_OBJECT_DETECTION);
+        options.add(FACE_DETECTION);
+        options.add(TEXT_RECOGNITION);
+        options.add(IMAGE_LABELING);
+        options.add(IMAGE_LABELING_CUSTOM);
+        options.add(CUSTOM_AUTOML_LABELING);
+        options.add(POSE_DETECTION);
+        options.add(SELFIE_SEGMENTATION);
 
-		// Creating adapter for spinner
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
-		// Drop down layout style - list view with radio button
-		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		// attaching data adapter to spinner
-		spinner.setAdapter(dataAdapter);
-		spinner.setOnItemSelectedListener(this);
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // attaching data adapter to spinner
+        spinner.setAdapter(dataAdapter);
+        spinner.setOnItemSelectedListener(this);
 
-		ToggleButton facingSwitch = findViewById(R.id.facing_switch);
-		facingSwitch.setOnCheckedChangeListener(this);
+        ToggleButton facingSwitch = findViewById(R.id.facing_switch);
+        facingSwitch.setOnCheckedChangeListener(this);
 
-		new ViewModelProvider(this, AndroidViewModelFactory.getInstance(getApplication()))
-				.get(CameraXViewModel.class)
-				.getProcessCameraProvider()
-				.observe(
-						this,
-						provider -> {
-							cameraProvider = provider;
-							if (allPermissionsGranted()) {
-								bindAllCameraUseCases();
-							}
-						});
+        new ViewModelProvider(this, AndroidViewModelFactory.getInstance(getApplication()))
+                .get(CameraXViewModel.class)
+                .getProcessCameraProvider()
+                .observe(
+                        this,
+                        provider -> {
+                            cameraProvider = provider;
+                            if (allPermissionsGranted()) {
+                                bindAllCameraUseCases();
+                            }
+                        });
 
-		ImageView settingsButton = findViewById(R.id.settings_button);
-		settingsButton.setOnClickListener(
-				v -> {
-					Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-					intent.putExtra(
-							SettingsActivity.EXTRA_LAUNCH_SOURCE,
-							SettingsActivity.LaunchSource.CAMERAX_LIVE_PREVIEW);
-					startActivity(intent);
-				});
+        ImageView settingsButton = findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(
+                v -> {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    intent.putExtra(
+                            SettingsActivity.EXTRA_LAUNCH_SOURCE,
+                            SettingsActivity.LaunchSource.CAMERAX_LIVE_PREVIEW);
+                    startActivity(intent);
+                });
 
-		if (!allPermissionsGranted()) {
-			getRuntimePermissions();
-		}
-	}
+        if (!allPermissionsGranted()) {
+            getRuntimePermissions();
+        }
+    }
 
-	@Override
-	protected void onSaveInstanceState(@NonNull Bundle bundle) {
-		super.onSaveInstanceState(bundle);
-		bundle.putString(STATE_SELECTED_MODEL, selectedModel);
-	}
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putString(STATE_SELECTED_MODEL, selectedModel);
+    }
 
-	@Override
-	public synchronized void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-		// An item was selected. You can retrieve the selected item using
-		// parent.getItemAtPosition(pos)
-		selectedModel = parent.getItemAtPosition(pos).toString();
-		Log.d(TAG, "Selected model: " + selectedModel);
-		bindAnalysisUseCase();
-	}
+    @Override
+    public synchronized void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        // An item was selected. You can retrieve the selected item using
+        // parent.getItemAtPosition(pos)
+        selectedModel = parent.getItemAtPosition(pos).toString();
+        Log.d(TAG, "Selected model: " + selectedModel);
+        bindAnalysisUseCase();
+    }
 
-	@Override
-	public void onNothingSelected(AdapterView<?> parent) {
-		// Do nothing.
-	}
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothing.
+    }
 
-	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		if (cameraProvider == null) {
-			return;
-		}
-		int newLensFacing =
-				lensFacing == CameraSelector.LENS_FACING_FRONT
-						? CameraSelector.LENS_FACING_BACK
-						: CameraSelector.LENS_FACING_FRONT;
-		CameraSelector newCameraSelector =
-				new CameraSelector.Builder().requireLensFacing(newLensFacing).build();
-		try {
-			if (cameraProvider.hasCamera(newCameraSelector)) {
-				Log.d(TAG, "Set facing to " + newLensFacing);
-				lensFacing = newLensFacing;
-				cameraSelector = newCameraSelector;
-				bindAllCameraUseCases();
-				return;
-			}
-		} catch (CameraInfoUnavailableException e) {
-			// Falls through
-		}
-		Toast.makeText(
-						getApplicationContext(),
-						"This device does not have lens with facing: " + newLensFacing,
-						Toast.LENGTH_SHORT)
-				.show();
-	}
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (cameraProvider == null) {
+            return;
+        }
+        int newLensFacing =
+                lensFacing == CameraSelector.LENS_FACING_FRONT
+                        ? CameraSelector.LENS_FACING_BACK
+                        : CameraSelector.LENS_FACING_FRONT;
+        CameraSelector newCameraSelector =
+                new CameraSelector.Builder().requireLensFacing(newLensFacing).build();
+        try {
+            if (cameraProvider.hasCamera(newCameraSelector)) {
+                Log.d(TAG, "Set facing to " + newLensFacing);
+                lensFacing = newLensFacing;
+                cameraSelector = newCameraSelector;
+                bindAllCameraUseCases();
+                return;
+            }
+        } catch (CameraInfoUnavailableException e) {
+            // Falls through
+        }
+        Toast.makeText(
+                        getApplicationContext(),
+                        "This device does not have lens with facing: " + newLensFacing,
+                        Toast.LENGTH_SHORT)
+                .show();
+    }
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		bindAllCameraUseCases();
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+        bindAllCameraUseCases();
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (imageProcessor != null) {
-			imageProcessor.stop();
-		}
-	}
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (imageProcessor != null) {
+            imageProcessor.stop();
+        }
+    }
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (imageProcessor != null) {
-			imageProcessor.stop();
-		}
-	}
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (imageProcessor != null) {
+            imageProcessor.stop();
+        }
+    }
 
-	private void bindAllCameraUseCases() {
-		if (cameraProvider != null) {
-			// As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
-			cameraProvider.unbindAll();
-			bindPreviewUseCase();
-			bindAnalysisUseCase();
-		}
-	}
+    private void bindAllCameraUseCases() {
+        if (cameraProvider != null) {
+            // As required by CameraX API, unbinds all use cases before trying to re-bind any of them.
+            cameraProvider.unbindAll();
+            bindPreviewUseCase();
+            bindAnalysisUseCase();
+        }
+    }
 
-	private void bindPreviewUseCase() {
-		if (!PreferenceUtils.isCameraLiveViewportEnabled(this)) {
-			return;
-		}
-		if (cameraProvider == null) {
-			return;
-		}
-		if (previewUseCase != null) {
-			cameraProvider.unbind(previewUseCase);
-		}
+    private void bindPreviewUseCase() {
+        if (!PreferenceUtils.isCameraLiveViewportEnabled(this)) {
+            return;
+        }
+        if (cameraProvider == null) {
+            return;
+        }
+        if (previewUseCase != null) {
+            cameraProvider.unbind(previewUseCase);
+        }
 
-		Preview.Builder builder = new Preview.Builder();
-		Size targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing);
-		if (targetResolution != null) {
-			builder.setTargetResolution(targetResolution);
-		}
-		previewUseCase = builder.build();
-		previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
-		cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
-	}
+        Preview.Builder builder = new Preview.Builder();
+        Size targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing);
+        if (targetResolution != null) {
+            builder.setTargetResolution(targetResolution);
+        }
+        previewUseCase = builder.build();
+        previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
+        cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
+    }
 
-	private void bindAnalysisUseCase() {
-		if (cameraProvider == null) {
-			return;
-		}
-		if (analysisUseCase != null) {
-			cameraProvider.unbind(analysisUseCase);
-		}
-		if (imageProcessor != null) {
-			imageProcessor.stop();
-		}
+    private void bindAnalysisUseCase() {
+        if (cameraProvider == null) {
+            return;
+        }
+        if (analysisUseCase != null) {
+            cameraProvider.unbind(analysisUseCase);
+        }
+        if (imageProcessor != null) {
+            imageProcessor.stop();
+        }
 
-		try {
-			switch (selectedModel) {
-				case OBJECT_DETECTION:
-					Log.i(TAG, "Using Object Detector Processor");
-					ObjectDetectorOptions objectDetectorOptions =
-							PreferenceUtils.getObjectDetectorOptionsForLivePreview(this);
-					imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions);
-					break;
-				case OBJECT_DETECTION_CUSTOM:
-					Log.i(TAG, "Using Custom Object Detector Processor");
-					LocalModel localModel =
-							new LocalModel.Builder()
-									.setAssetFilePath("custom_models/object_labeler.tflite")
-									.build();
-					CustomObjectDetectorOptions customObjectDetectorOptions =
-							PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel);
-					imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions);
-					break;
-				case CUSTOM_AUTOML_OBJECT_DETECTION:
-					Log.i(TAG, "Using Custom AutoML Object Detector Processor");
-					LocalModel customAutoMLODTLocalModel =
-							new LocalModel.Builder().setAssetManifestFilePath("automl/manifest.json").build();
-					CustomObjectDetectorOptions customAutoMLODTOptions =
-							PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(
-									this, customAutoMLODTLocalModel);
-					imageProcessor = new ObjectDetectorProcessor(this, customAutoMLODTOptions);
-					break;
-				case TEXT_RECOGNITION:
-					Log.i(TAG, "Using on-device Text recognition Processor");
-					imageProcessor = new TextRecognitionProcessor(this);
-					break;
-				case FACE_DETECTION:
-					Log.i(TAG, "Using Face Detector Processor");
-					imageProcessor = new FaceDetectorProcessor(this);
-					break;
-				case BARCODE_SCANNING:
-					Log.i(TAG, "Using Barcode Detector Processor");
-					imageProcessor = new BarcodeScannerProcessor(this);
-					break;
-				case IMAGE_LABELING:
-					Log.i(TAG, "Using Image Label Detector Processor");
-					imageProcessor = new LabelDetectorProcessor(this, ImageLabelerOptions.DEFAULT_OPTIONS);
-					break;
-				case IMAGE_LABELING_CUSTOM:
-					Log.i(TAG, "Using Custom Image Label (Birds) Detector Processor");
-					LocalModel localClassifier =
-							new LocalModel.Builder()
-									.setAssetFilePath("custom_models/bird_classifier.tflite")
-									.build();
-					CustomImageLabelerOptions customImageLabelerOptions =
-							new CustomImageLabelerOptions.Builder(localClassifier).build();
-					imageProcessor = new LabelDetectorProcessor(this, customImageLabelerOptions);
-					break;
-				case CUSTOM_AUTOML_LABELING:
-					Log.i(TAG, "Using Custom AutoML Image Label Detector Processor");
-					LocalModel customAutoMLLabelLocalModel =
-							new LocalModel.Builder().setAssetManifestFilePath("automl/manifest.json").build();
-					CustomImageLabelerOptions customAutoMLLabelOptions =
-							new CustomImageLabelerOptions.Builder(customAutoMLLabelLocalModel)
-									.setConfidenceThreshold(0)
-									.build();
-					imageProcessor = new LabelDetectorProcessor(this, customAutoMLLabelOptions);
-					break;
-				case POSE_DETECTION:
-					PoseDetectorOptionsBase poseDetectorOptions =
-							PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
-					boolean shouldShowInFrameLikelihood =
-							PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this);
-					boolean visualizeZ = PreferenceUtils.shouldPoseDetectionVisualizeZ(this);
-					boolean rescaleZ = PreferenceUtils.shouldPoseDetectionRescaleZForVisualization(this);
-					boolean runClassification = PreferenceUtils.shouldPoseDetectionRunClassification(this);
-					imageProcessor =
-							new PoseDetectorProcessor(
-									this,
-									poseDetectorOptions,
-									shouldShowInFrameLikelihood,
-									visualizeZ,
-									rescaleZ,
-									runClassification,
-									/* isStreamMode = */ true);
-					break;
-				case SELFIE_SEGMENTATION:
-					imageProcessor = new SegmenterProcessor(this);
-					break;
-				default:
-					throw new IllegalStateException("Invalid model name");
-			}
-		} catch (Exception e) {
-			Log.e(TAG, "Can not create image processor: " + selectedModel, e);
-			Toast.makeText(
-							getApplicationContext(),
-							"Can not create image processor: " + e.getLocalizedMessage(),
-							Toast.LENGTH_LONG)
-					.show();
-			return;
-		}
+        try {
+            switch (selectedModel) {
+                case OBJECT_DETECTION:
+                    Log.i(TAG, "Using Object Detector Processor");
+                    ObjectDetectorOptions objectDetectorOptions =
+                            PreferenceUtils.getObjectDetectorOptionsForLivePreview(this);
+                    imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions);
+                    break;
+                case OBJECT_DETECTION_CUSTOM:
+                    Log.i(TAG, "Using Custom Object Detector Processor");
+                    LocalModel localModel =
+                            new LocalModel.Builder()
+                                    .setAssetFilePath("custom_models/object_labeler.tflite")
+                                    .build();
+                    CustomObjectDetectorOptions customObjectDetectorOptions =
+                            PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(this, localModel);
+                    imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions);
+                    break;
+                case CUSTOM_AUTOML_OBJECT_DETECTION:
+                    Log.i(TAG, "Using Custom AutoML Object Detector Processor");
+                    LocalModel customAutoMLODTLocalModel =
+                            new LocalModel.Builder().setAssetManifestFilePath("automl/manifest.json").build();
+                    CustomObjectDetectorOptions customAutoMLODTOptions =
+                            PreferenceUtils.getCustomObjectDetectorOptionsForLivePreview(
+                                    this, customAutoMLODTLocalModel);
+                    imageProcessor = new ObjectDetectorProcessor(this, customAutoMLODTOptions);
+                    break;
+                case TEXT_RECOGNITION:
+                    Log.i(TAG, "Using on-device Text recognition Processor");
+                    imageProcessor = new TextRecognitionProcessor(this);
+                    break;
+                case FACE_DETECTION:
+                    Log.i(TAG, "Using Face Detector Processor");
+                    imageProcessor = new FaceDetectorProcessor(this);
+                    break;
+                case IMAGE_LABELING:
+                    Log.i(TAG, "Using Image Label Detector Processor");
+                    imageProcessor = new LabelDetectorProcessor(this, ImageLabelerOptions.DEFAULT_OPTIONS);
+                    break;
+                case IMAGE_LABELING_CUSTOM:
+                    Log.i(TAG, "Using Custom Image Label (Birds) Detector Processor");
+                    LocalModel localClassifier =
+                            new LocalModel.Builder()
+                                    .setAssetFilePath("custom_models/bird_classifier.tflite")
+                                    .build();
+                    CustomImageLabelerOptions customImageLabelerOptions =
+                            new CustomImageLabelerOptions.Builder(localClassifier).build();
+                    imageProcessor = new LabelDetectorProcessor(this, customImageLabelerOptions);
+                    break;
+                case CUSTOM_AUTOML_LABELING:
+                    Log.i(TAG, "Using Custom AutoML Image Label Detector Processor");
+                    LocalModel customAutoMLLabelLocalModel =
+                            new LocalModel.Builder().setAssetManifestFilePath("automl/manifest.json").build();
+                    CustomImageLabelerOptions customAutoMLLabelOptions =
+                            new CustomImageLabelerOptions.Builder(customAutoMLLabelLocalModel)
+                                    .setConfidenceThreshold(0)
+                                    .build();
+                    imageProcessor = new LabelDetectorProcessor(this, customAutoMLLabelOptions);
+                    break;
+                case POSE_DETECTION:
+                    PoseDetectorOptionsBase poseDetectorOptions =
+                            PreferenceUtils.getPoseDetectorOptionsForLivePreview(this);
+                    boolean shouldShowInFrameLikelihood =
+                            PreferenceUtils.shouldShowPoseDetectionInFrameLikelihoodLivePreview(this);
+                    boolean visualizeZ = PreferenceUtils.shouldPoseDetectionVisualizeZ(this);
+                    boolean rescaleZ = PreferenceUtils.shouldPoseDetectionRescaleZForVisualization(this);
+                    boolean runClassification = PreferenceUtils.shouldPoseDetectionRunClassification(this);
+                    imageProcessor =
+                            new PoseDetectorProcessor(
+                                    this,
+                                    poseDetectorOptions,
+                                    shouldShowInFrameLikelihood,
+                                    visualizeZ,
+                                    rescaleZ,
+                                    runClassification,
+                                    /* isStreamMode = */ true);
+                    break;
+                case SELFIE_SEGMENTATION:
+                    imageProcessor = new SegmenterProcessor(this);
+                    break;
+                default:
+                    throw new IllegalStateException("Invalid model name");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Can not create image processor: " + selectedModel, e);
+            Toast.makeText(
+                            getApplicationContext(),
+                            "Can not create image processor: " + e.getLocalizedMessage(),
+                            Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
 
-		ImageAnalysis.Builder builder = new ImageAnalysis.Builder();
-		Size targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing);
-		if (targetResolution != null) {
-			builder.setTargetResolution(targetResolution);
-		}
-		analysisUseCase = builder.build();
+        ImageAnalysis.Builder builder = new ImageAnalysis.Builder();
+        Size targetResolution = PreferenceUtils.getCameraXTargetResolution(this, lensFacing);
+        if (targetResolution != null) {
+            builder.setTargetResolution(targetResolution);
+        }
+        analysisUseCase = builder.build();
 
-		needUpdateGraphicOverlayImageSourceInfo = true;
-		analysisUseCase.setAnalyzer(
-				// imageProcessor.processImageProxy will use another thread to run the detection underneath,
-				// thus we can just runs the analyzer itself on main thread.
-				ContextCompat.getMainExecutor(this),
-				imageProxy -> {
-					if (needUpdateGraphicOverlayImageSourceInfo) {
-						boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
-						int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
-						if (rotationDegrees == 0 || rotationDegrees == 180) {
-							graphicOverlay.setImageSourceInfo(
-									imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
-						} else {
-							graphicOverlay.setImageSourceInfo(
-									imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
-						}
-						needUpdateGraphicOverlayImageSourceInfo = false;
-					}
-					try {
-						imageProcessor.processImageProxy(imageProxy, graphicOverlay);
-					} catch (MlKitException e) {
-						Log.e(TAG, "Failed to process image. Error: " + e.getLocalizedMessage());
-						Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
-								.show();
-					}
-				});
+        needUpdateGraphicOverlayImageSourceInfo = true;
+        analysisUseCase.setAnalyzer(
+                // imageProcessor.processImageProxy will use another thread to run the detection underneath,
+                // thus we can just runs the analyzer itself on main thread.
+                ContextCompat.getMainExecutor(this),
+                imageProxy -> {
+                    if (needUpdateGraphicOverlayImageSourceInfo) {
+                        boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
+                        int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+                        if (rotationDegrees == 0 || rotationDegrees == 180) {
+                            graphicOverlay.setImageSourceInfo(
+                                    imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
+                        } else {
+                            graphicOverlay.setImageSourceInfo(
+                                    imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
+                        }
+                        needUpdateGraphicOverlayImageSourceInfo = false;
+                    }
+                    try {
+                        imageProcessor.processImageProxy(imageProxy, graphicOverlay);
+                    } catch (MlKitException e) {
+                        Log.e(TAG, "Failed to process image. Error: " + e.getLocalizedMessage());
+                        Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
 
-		cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
-	}
+        cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
+    }
 
-	private String[] getRequiredPermissions() {
-		try {
-			PackageInfo info =
-					this.getPackageManager()
-							.getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
-			String[] ps = info.requestedPermissions;
-			if (ps != null && ps.length > 0) {
-				return ps;
-			} else {
-				return new String[0];
-			}
-		} catch (Exception e) {
-			return new String[0];
-		}
-	}
+    private String[] getRequiredPermissions() {
+        try {
+            PackageInfo info =
+                    this.getPackageManager()
+                            .getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
+            String[] ps = info.requestedPermissions;
+            if (ps != null && ps.length > 0) {
+                return ps;
+            } else {
+                return new String[0];
+            }
+        } catch (Exception e) {
+            return new String[0];
+        }
+    }
 
-	private boolean allPermissionsGranted() {
-		for (String permission : getRequiredPermissions()) {
-			if (!isPermissionGranted(this, permission)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private boolean allPermissionsGranted() {
+        for (String permission : getRequiredPermissions()) {
+            if (!isPermissionGranted(this, permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private void getRuntimePermissions() {
-		List<String> allNeededPermissions = new ArrayList<>();
-		for (String permission : getRequiredPermissions()) {
-			if (!isPermissionGranted(this, permission)) {
-				allNeededPermissions.add(permission);
-			}
-		}
+    private void getRuntimePermissions() {
+        List<String> allNeededPermissions = new ArrayList<>();
+        for (String permission : getRequiredPermissions()) {
+            if (!isPermissionGranted(this, permission)) {
+                allNeededPermissions.add(permission);
+            }
+        }
 
-		if (!allNeededPermissions.isEmpty()) {
-			ActivityCompat.requestPermissions(
-					this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
-		}
-	}
+        if (!allNeededPermissions.isEmpty()) {
+            ActivityCompat.requestPermissions(
+                    this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
+        }
+    }
 
-	@Override
-	public void onRequestPermissionsResult(
-			int requestCode, String[] permissions, int[] grantResults) {
-		Log.i(TAG, "Permission granted!");
-		if (allPermissionsGranted()) {
-			bindAllCameraUseCases();
-		}
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-	}
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        Log.i(TAG, "Permission granted!");
+        if (allPermissionsGranted()) {
+            bindAllCameraUseCases();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }
