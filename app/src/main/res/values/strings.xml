@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">MLKit-Vision</string>
-    <string name="java_entry_title" translatable="false">Run the ML Kit quickstart written in Java</string>
-    <string name="kotlin_entry_title" translatable="false">Run the ML Kit quickstart written in Kotlin</string>
-    <string name="ok" translatable="false">OK</string>
-    <string name="permission_camera_rationale" translatable="false">Access to the camera is needed for detection</string>
-    <string name="no_camera_permission" translatable="false">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
-    <string name="low_storage_error" translatable="false">Face detector dependencies cannot be downloaded due to low device storage</string>
-    <string name="toggle_turn_on" translatable="false">Front</string>
-    <string name="toggle_turn_off" translatable="false">Back</string>
     <string name="desc_camera_source_activity" translatable="false">Vision detectors demo with live camera preview</string>
     <string name="desc_still_image_activity" translatable="false">Vision detectors demo with a still image</string>
     <string name="desc_camerax_live_preview_activity" translatable="false">Vision detectors demo with live preview using CameraX. Note that CameraX is only supported on API 21+</string>
@@ -16,8 +8,6 @@
     <string name="desc_video_textureview_activity" translatable="false">Vision detectors demo with a video (TextureView)</string>
     <string name="desc_video_opengles_activity" translatable="false">Vision detectors demo with a video (OpenGL ES)</string>
     <string name="desc_video_rawdecoderdata_activity" translatable="false">Vision detectors demo with a video (Raw Decoder Data)</string>
-    <string name="download_error" translatable="false">Download error</string>
-    <string name="start_over" translatable="false">Start over</string>
     <string name="menu_item_settings" translatable="false">Settings</string>
     <string name="select_image" translatable="false">Select image</string>
     <string name="custom_object_detection" translatable="false">Custom Object Detector</string>
@@ -31,7 +21,6 @@
     <string name="pref_category_info" translatable="false">Detection Info</string>
     <string name="pref_category_face_detection" translatable="false">Face Detection</string>
     <string name="pref_category_object_detection" translatable="false">Object Detection / Custom Object Detection</string>
-    <string name="pref_category_automl" translatable="false">AutoML Image Labeling</string>
     <string name="pref_category_pose_detection" translatable="false">Pose Detection</string>
     <string name="pref_category_segmentation" translatable="false">Selfie Segmentation</string>
 
