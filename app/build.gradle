@@ -15,6 +15,7 @@ android {
         vectorDrawables.useSupportLibrary = true
         setProperty("archivesBaseName", "vision-quickstart")
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -23,8 +24,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility rootProject.ext.java_version
+        targetCompatibility rootProject.ext.java_version
+    }
+
+    kotlinOptions {
+        jvmTarget = rootProject.ext.java_version
     }
 
     // Do NOT compress tflite model files (need to call out to developers!)
@@ -38,20 +43,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.multidex:multidex:2.0.1'
-
-    // Object detection feature with bundled default classifier
-    implementation 'com.google.mlkit:object-detection:17.0.0'
-
-    // Object detection feature with custom classifier support
-    implementation 'com.google.mlkit:object-detection-custom:17.0.0'
-
-    // Face features
-    implementation 'com.google.mlkit:face-detection:16.1.5'
-
-    // Selfie segmentation
-    implementation 'com.google.mlkit:segmentation-selfie:16.0.0-beta4'
-
-    implementation 'com.google.mlkit:camera:16.0.0-beta3'
 
     // -------------------------------------------------------
 
@@ -67,28 +58,40 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
+    // Exoplayer
+    def exoplayerVersion = "2.14.2"
+    implementation "com.google.android.exoplayer:exoplayer:$exoplayerVersion"
+
+    //MLKit
+    // Object detection feature with bundled default classifier
+    implementation 'com.google.mlkit:object-detection:17.0.0'
+
+    // Object detection feature with custom classifier support
+    implementation 'com.google.mlkit:object-detection-custom:17.0.0'
+
+    // Face features
+    implementation 'com.google.mlkit:face-detection:16.1.5'
+
+    // Selfie segmentation
+    implementation 'com.google.mlkit:segmentation-selfie:16.0.0-beta4'
+
+    implementation 'com.google.mlkit:camera:16.0.0-beta3'
+
     // CameraX
-    def camerax_version = '1.1.0-beta03'
+    def camerax_version = '1.1.0-beta03' // 1.0.0-SNAPSHOT
 //    implementation "androidx.camera:camera-core:$camerax_version"
     implementation "androidx.camera:camera-camera2:$camerax_version"
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:$camerax_version"
-//    implementation "androidx.camera:camera-camera2:1.0.0-SNAPSHOT"
-//    implementation "androidx.camera:camera-lifecycle:1.0.0-SNAPSHOT"
-//    implementation "androidx.camera:camera-view:1.0.0-SNAPSHOT"
 
     // On Device Machine Learnings
     implementation "com.google.android.odml:image:1.0.0-beta1"
-
 
     implementation 'org.tensorflow:tensorflow-lite-task-vision:0.4.3'
     // Import the GPU delegate plugin Library for GPU inference
     implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.3'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.12.0'
 
-    // Exoplayer
-    def exoplayerVersion = "2.14.2"
-    implementation "com.google.android.exoplayer:exoplayer:$exoplayerVersion"
 }
 
 configurations {
