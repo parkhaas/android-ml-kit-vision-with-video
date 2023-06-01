@@ -65,8 +65,6 @@ import java.util.Objects;
 public final class CameraXSourceDemoActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, CompoundButton.OnCheckedChangeListener {
     private static final String TAG = "CameraXSourceDemo";
     private static final int PERMISSION_REQUESTS = 1;
-
-    //    private static final LocalModel localModel = new LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build();
     private static final LocalModel localModel = new LocalModel.Builder().setAssetFilePath("test.tflite").build();
 
     private PreviewView previewView;

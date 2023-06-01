@@ -41,9 +41,6 @@ import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
  * Utility class to retrieve shared preferences.
  */
 public class PreferenceUtils {
-
-    private static final int POSE_DETECTOR_PERFORMANCE_MODE_FAST = 1;
-
     private PreferenceUtils() {
     }
 
